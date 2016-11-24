@@ -1,0 +1,374 @@
+---
+title: "Evaluación de Pruebas Estandarizadas"
+author: ""
+date: "Noviembre de 2016"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+set.seed(1234)
+library("CMC")
+
+knitr::knit_hooks$set(
+  par = function(before, options, envir){
+          if (before && options$fig.show != 'none'){
+            if (!is.null(options$mar)) par(mar = options$mar)
+          }
+        }
+  )
+
+knitr::opts_chunk$set(echo     = FALSE,
+                      warning  = FALSE,
+                      mar      = c(5, 4, 0.5, 2) + 0.1,
+                      dev.args = list(bg = "transparent"))
+```
+
+
+## Introducción
+
+**¿Qué es un ítem?**
+
+*"Un ítem, en el examen de atributos mentales, es una unidad de medida con un estímulo y una forma prescriptiva de respuesta (...) que permite inferir el desempeño en un constructo sicológico (habilidad, predisposición o rasgo)".*
+
+*"Una prueba es una colección de ítems que pretende medir conocimiento, logro, aptitud u otra característica cognitiva".*
+
+Los procesos cerebrales no se entienden completamente por lo tanto se utilizan instrumentos como las pruebas para tratar de medir algo que no es directamente observable.
+
+(Reckase, M., **Multidimensional Item Response Theory**)
+
+## Teoría Clásica del Test (TCT)
+
+Esta teoría hace parte de la psicometría y se caracteriza porque hace un análisis conjunto de toda la prueba y no sobre cada uno de los ítems que la componen.
+
+Se supone que la puntuación empírica (observable) de una persona, $X$, está conformada por dos componentes hipotéticos que son el nivel del rasgo o puntuación verdadera ($T$) y un error de medición $e$, esto es:
+
+$$X = T + e.$$
+
+
+## Teoría Clásica del Test (TCT)
+
+Además se supone que:
+
+* El valor esperado de la puntuación observada es la puntuación verdadera: $T = E(X)$. Por lo tanto, el valor esperado de los errores es cero: $E(e) = 0$.
+* Si se conocieran $T$ y $e$ la correlación entre ellos sería nula: $\rho(T, e) = 0$.
+* Si se conocieran los errores de medida de cada individuo en dos pruebas distintas ($a$ y $b$), la correlación entre ambas variables sería nula: $\rho(e_a, e_b) = 0$.
+* Si se conocieran los errores en una prueba $a$ y los puntajes verdaderos en una prueba $b$, estos no estarían correlacionados: $\rho(e_a, T_b) = 0$.
+
+
+## Teoría Clásica del Test (TCT)
+
+**Confiabilidad de una prueba**
+
+* Coeficiente de fiabilidad a partir de $n$ formas paralelas. Las formas paralelas de una prueba se definen mediante dos condiciones:
+    + Un individuo tiene la misma puntuación verdadera $T$ en las formas.
+    + La varianza de los errores de medida en las formas es la misma.
+* El coeficiente $\alpha$ de Cronbach da idea de la consistencia interna de la prueba.
+
+
+## Teoría Clásica del Test (TCT)
+
+**Ventajas**
+
+- Es un modelo válido que permite hacer inferencias sobre un rasgo inobservable a través de una prueba.
+- El modelo es simple y fácil de explicar a un interlocutor.
+
+**Desventajas**
+
+- No es posible establecer equivalencias entre dos pruebas distintas.
+- Todos los ítems son equivalentes, es decir, miden de igual manera el constructo.
+- No se puede analizar interacciones entre individuos e ítems.
+
+
+## Teoría de Respuesta al Ítem (TRI)
+
+Los modelos de TRI son ususalmente utilizados en pruebas que tienen ítems cuya respuesta se puede etiquetar como correcta (1) o incorrecta (0).
+
+Se supone que una respuesta correcta está relacionada con un mayor nivel de habilidad que una respuesta incorrecta, por lo tanto las funciones apropiadas para modelar la interacción entre ítems y personas deben ser monótonas crecientes.
+
+
+## Teoría de Respuesta al Ítem (TRI)
+
+El modelo más simple propuesto por Rasch (1960), está dado por:
+
+$$P(u_{ij} = 1 | A_j, B_i) = \frac{A_j B_i}{1 + A_j B_i},$$
+
+donde $u_{ij}$ es la "respuesta" de la persona $j$ al ítem $i$, $A_j$ es un parámetro de la persona y $B_i$ es un parámetro del ítem $i$.
+
+**Desventaja:** Este modelo puede producir una distribución sesgada.
+
+
+## Teoría de Respuesta al Ítem (TRI)
+
+```{r plot1}
+x <- rbeta(n = 5000, shape1 = 1, shape2 = 7)
+hist(x*10, breaks = 100, freq = FALSE, main = "", ylab = "Frecuencia Relativa", xlab = "Habilidad")
+```
+
+
+## Teoría de Respuesta al Ítem (TRI)
+
+**Alternativa:** Tomar una transformación logarítmica, $\theta_j = \log(A_j)$ y $b_i = -\log(B_i)$. Rasch(1960).
+
+La ecuación para el modelo transformado es:
+
+$$P(u_{ij} = 1 | \theta_j, b_i) = \frac{\exp^{\theta_j - b_i}}{1 + \exp^{\theta_j - b_i}}.$$
+El parámetro $\theta_j$ varía en $(-\infty, \infty)$ y se denomina *habilidad* y el parámetro $b_j$ se llama *dificultad* del ítem.
+
+Este modelo se conoce como *modelo logístico de un parámetro* (**1PL**) o modelo de Rasch y la forma gráfica de la ecuación se denomina *curva característica del ítem* (CCI).
+
+
+## Teoría de Respuesta al Ítem (TRI)
+
+**Ejemplos de CCI**
+
+```{r ICCplot_1pl}
+par(mar = c(5, 4, 0.5, 2) + 0.1)
+curve(exp(x - 0.62) / (1 + exp(x - 0.62)), from = -5, to = 5, 
+      lwd = 2, col = "blue", ylab = "Probabilidad",
+      xlab = expression(paste("Habilidad (", theta, ")")))
+curve(exp(x - 1.57) / (1 + exp(x - 1.57)), from = -5, to = 5, lwd = 2, 
+      col = "red", add = TRUE)
+curve(exp(x + 2) / (1 + exp(x + 2)), from = -5, to = 5, lwd = 2, 
+      col = "violet", add = TRUE)
+legend(x = "topleft", col = c("violet", "blue", "red"), lty = c(1, 1, 1), 
+       lwd = c(2, 2, 2), legend = c(expression(b[i] == -2),
+                                    expression(b[i] == 0.62),
+                                    expression(b[i] == 1.57)))
+```
+
+
+## Teoría de Respuesta al Ítem (TRI)
+
+Ahora si se considera una dificultad de 0.5 y que la pendiente (máxima) de una CCI puede variar se podrían tener las siguientes situaciones:
+
+```{r ICCplot_2pl}
+par(mar = c(5, 4, 0.5, 2) + 0.1)
+curve(exp(1 * (x - 0.5)) / (1 + exp(1 *(x - 0.5))), from = -5, to = 5, 
+      lwd = 2, col = "blue", ylab = "Probabilidad",
+      xlab = expression(paste("Habilidad (", theta, ")")))
+curve(exp(0.4 * (x - 0.5)) / (1 + exp(0.4 * (x - 0.5))), from = -5, to = 5, 
+      xlab="x", ylab="y", lwd = 2, col = "red", add = TRUE)
+curve(exp(2.3 * (x - 0.5)) / (1 + exp(2.3 * (x - 0.5))), from = -5, to = 5,
+      xlab="x", ylab="y", lwd = 2, col = "violet", add = TRUE)
+curve(exp(0 * (x - 0.5)) / (1 + exp(0 * (x - 0.5))), from = -5, to = 5,
+      xlab="x", ylab="y", lwd = 2, col = "darkgreen", add = TRUE)
+legend(x = "topleft", 
+       legend = c("Pendiente 2.3", "Pendiente 1", 
+                  "Pendiente 0.4", "Pendiente 0"), 
+       col = c("violet", "blue", "red", "darkgreen"), 
+       lty = c(1, 1, 1), lwd = c(2, 2, 2))
+```
+
+
+## Teoría de Respuesta al Ítem (TRI)
+
+El parámetro que hace que varíe la pendiente máxima se llama *discriminación* y se denota $a_i$. La "región" en la cual la curva es más empinada es en el cual el ítem discrimina mejor. Lord (1980).
+
+El *modelo logístico de 2 parámetros* (**2PL**) está dado por la siguiente ecuación:
+
+$$P(u_{ij} = 1 | \theta_j, a_i, b_i) = \frac{\exp^{a_i(\theta_j - b_i)}}{1 + \exp^{a_i(\theta_j - b_i)}}.$$
+
+
+## Teoría de Respuesta al Ítem (TRI)
+
+Otra característica de la interacción entre individuos e ítems es que una persona con baja habilidad puede responder correctamente un ítem con una dificultad alta. Esto se atribuye a que en pruebas de selección múltiple un evaluado puede adivinar la respuesta.  Lord (1980).
+
+Por esta razón el *modelo logístico de tres parámetros* (**3PL**) considera un parámetro de *pseudo-azar*, denotado por $c_i$.
+
+$$P(u_{ij} = 1 | \theta_j, a_i, b_i, c_i) = c_i + (1 - c_i) \frac{\exp^{a_i(\theta_j - b_i)}}{1 + \exp^{a_i(\theta_j - b_i)}}.$$
+
+
+## Teoría de Respuesta al Ítem (TRI)
+
+Gráficamente, el parámetro de *pseudo-azar* representa una asíntota inferior para la CCI.
+
+```{r ICCplot_3pl}
+par(mar = c(5, 4, 0.5, 2) + 0.1)
+curve(0.05 + (1 - 0.05) * (exp(1 * (x - 0.5)) / (1 + exp(1 *(x - 0.5)))), 
+      from = -5, to = 5, lwd = 2, col = "blue", ylab = "Probabilidad",
+      xlab = expression(paste("Habilidad (", theta, ")")))
+curve(0.15 + (1 - 0.15) * (exp(0.5 * (x - 0.5)) / (1 + exp(0.5 * (x - 0.5)))), 
+      from = -5, to = 5, xlab="x", ylab="y", lwd = 2, col = "red", add = TRUE)
+curve(0.32 + (1 - 0.32) * (exp(2.3 * (x - 0.5)) / (1 + exp(2.3 * (x - 0.5)))), 
+      from = -5, to = 5, xlab="x", ylab="y", lwd = 2, col = "violet", add = TRUE)
+legend(x = "topleft", col = c("violet", "blue", "red"), lty = c(1, 1, 1),
+       lwd = c(2, 2, 2), legend = c(expression(c[i] == 0.32),
+                                    expression(c[i] == 0.05),
+                                    expression(c[i] == 0.15)))
+```
+
+
+## Supuestos de la TRI
+
+**Unidimensionalidad.** En TRI se busca un factor "dominante", es decir, un factor que dé cuenta de una cantidad considerable de la variabilidad de las respuestas.
+
+**Independencia de los parámetros.** Diferentes conjuntos de ítems deben producir estimaciones de habilidades similares. Un mismo ítem aplicado a distintas muestras de una misma población debe producir estimaciones similares de dificultad.
+
+**Independencia condicional.** Dada una habilidad $\theta$, las respuestas a los distintos ítems son independientes. Este supuesto no se cumple cuando:
+
+* Las probabilidades de respuesta correcta para los últimos ítems son muy bajas.
+* Un ítem brinda información que facilita responder otro ítem.
+
+
+## Confiabilidad de una prueba
+
+El $\alpha$ de Cronbach es la medida más utilizada de la consistencia interna de una prueba.
+
+Considerando una prueba con $k$ ítems, el coeficiente está dado por:
+
+$$\alpha = \frac{k}{k -1} \left(1 - \frac{\sum_{j = 1}^k \sigma^2_j}{\sigma^2_X} \right),$$
+donde $\sigma^2_j$ es la varianza del ítem $j$ y $\sigma^2_X$ es la varianza de las puntuaciones de la prueba.
+
+
+##Confiabilidad de una prueba
+
+Dado que las puntuaciones de la prueba son la suma de las puntuaciones de los ítems, entonces:
+
+$$\sigma^2_X = \sum_{j = 1}^k \sigma^2_{U_j} + 2 \sum_{j<l}cov(U_j, U_l).$$
+
+Por lo tanto el coeficiente $\alpha$ de Cronbach se puede expresar como:
+
+$$\alpha = \frac{k}{k -1} \left(\frac{2 \sum_{j<l}cov(U_j, U_l)}{\sigma^2_X} \right).$$
+
+
+## Confiabilidad de una prueba
+
+**Curva de Cronbach-Mesbah:** Es una herramienta gráfica que permite ver el comportamiento del coeficiente $\alpha$ cuando se excluyen ítems.
+
+```{r CMcurve1, include = FALSE}
+data(cain)
+out <- alpha.curve(cain)
+```
+
+```{r CMcurve2}
+it <- paste0("I", c(20, 16, 13, 14, 9, 7, 25, 11, 23, 22))
+k <- 12
+par(mar = c(5, 4, 0.5, 2) + 0.1)
+plot(out[, 1], out[, 2], t = "b", xlab = "Número de ítems", 
+        ylab = expression(paste(alpha, " de Cronbach")))
+    text(seq(2, k), out[, 2], c(it, ""), pos = 3, cex = 0.6)
+```
+
+
+## Confiabilidad de una prueba
+
+Facilita la identificación de ítems "problemáticos".
+
+```{r CMcurve3}
+out[11, 2] <- 0.82011596
+out[10, 2] <- 0.82717293
+out[9, 2] <- 0.83254752
+par(mar = c(5, 4, 0.5, 2) + 0.1)
+plot(out[, 1], out[, 2], t = "b", xlab = "Número de ítems", 
+     ylim = c(0.67, 0.85), ylab = expression(paste(alpha, " de Cronbach")))
+text(seq(2, k), out[, 2], c(it, ""), pos = 3, cex = 0.6)
+```
+
+
+## Confiabilidad de una prueba
+
+Notas sobre el $\alpha$ de Cronbach:
+
+* Reproduce el coeficiente de fiabilidad si todos los ítems son paralelos, es decir, si "apuntan" al mismo contructo. De lo contrario, el $\alpha$ debería calcularse para cada constructo.
+* Se ha demostrado que, bajo ciertos supuestos, es una cota inferior de la confiabilidad de la prueba.
+* Este coeficiente mide la inter-relación de un conjunto de ítems y puede tomar valores negativos.
+* El valor desde el cual se considera "aceptable" es subjetivo, entre 0.7 y 0.85.
+* Valores muy cercanos a 1 pueden indicar que algunos ítems son redundantes.
+* Se recomienda complementar con un análisis factorial.
+
+
+## Análisis Factorial
+
+Es una técnica de reducción de variables. Busca explicar un conjunto de variables en términos de una parte sistemática o factores latentes y una parte no sistemática o errores no observables (no correlacionados).
+
+Considerando $X$ un vector aleatorio con media $\mu$  y matriz de covarianzas $\Sigma$, el modelo factorial se puede expresar matricialmente de la siguiente manera:
+
+$$ X_{(p \times 1)} = \mu_{(p \times 1)} + \Lambda_{(p \times k)} f_{(k \times 1)} + U_{(p \times 1)},$$
+
+donde $k \leq p$, $\Lambda$ es una matriz de constantes (ponderaciones), $f$ es un vector que contiene los factores y $U$ es un vector aleatorio independiente de $f$.
+
+
+## Análisis Factorial
+
+**Supuestos**
+
+* $E(f) = 0$ y $cov(f) = 0$.
+* $E(U) = 0$, $cov(U) = E(UU^{'}) = \Psi$, con $\Psi$ matriz diagonal y $cov(f,U) = 0$.
+
+Más explícitamente el modelo se puede expresar de la siguiente manera:
+
+$$X_i = \mu_i + \sum_{j=1}^{k} \lambda_{ij} f_j + u_i, \qquad i = 1, \dots, p.$$
+
+
+## Análisis Factorial
+
+Y por lo tanto la varianza de $X_i$ es:
+
+$$var(X_i) = \sigma^{2}_{ii} = \sum_{j = 1}^{k} \lambda_{ij} + \psi_{ii},$$
+
+la cual se puede descomponer en dos partes:
+
+* Comunalidad: $h_i^2 = \sum_{j = 1}^{k} \lambda_{ij}$ representa la varianza compartida con las demás variables a través de $f$.
+* Especificidad: $\psi_{ii}$ es la varianza única, es decir, que no es compartida.
+
+
+## Análisis Factorial
+
+Esto es, expresado en forma matricial:
+
+$$\Sigma = \Lambda \Phi \Lambda^{'} + \Psi,$$
+
+donde $\Phi = cov(f)$, pero si $\Phi = I$ esto quiere decir que los factores son ortogonales y por lo tanto:
+
+$$\Sigma = \Lambda \Lambda^{'} + \Psi.$$
+
+
+## Análisis Factorial
+
+**Métodos de estimación**
+
+* Método de la componente principal. Se utiliza la misma descomposición de la matriz de covarianzas muestral ($S$) que en el ACP y se considera insignificante la matriz $\Psi$.
+* Método del eje principal. Es un procedimiento iterativo en el cual se trabja con la matriz de correlaciones muestral y se deben dar valores iniciales para las comunalidades.
+* Máxima verosimilitud. Se supone que tanto $f$ como $U$ siguen distribuciones normales y que los factores son ortogonales.
+* Mínimos cuadrados. Se busca minimizar los residuales entre la matriz de correlaciones muestral y la matriz producida por los factores.
+
+## Análisis Factorial
+
+**Rotaciones**
+
+Se utilizan para obtener factores que sean más fáciles de interpretar.
+
+* Las rotaciones ortogonales implican que los factores son independientes. Entre las más utilizadas están: *varimax* y *cuatrimax*.
+
+* Las rotaciones oblicuas permiten correlaciones entre los factores. Entre las más utilizadas están: *promax* y *oblimin*.
+
+
+## Propuestas
+
+Para validar la existencia de los cinco factores subyacentes en el Trust Index &copy;
+
+* Utilizar los datos conjuntamente, no por país.
+* Comparar correlaciones policóricas con los coeficientes de Spearman y Kendall.
+* Llevar a cabo  un análisis factorial confirmatorio:
+    - Método de estimación: máxima verosimilitud o mínimos cuadrados generalizados.
+    - En principio, utilizando una rotación oblicua (*promax*). Luego, de ser necesario una rotación ortogonal (*varimax*).
+
+
+## Propuestas
+
+En cuanto a los modelos logísticos y TRI
+
+* Revisar en detalle modelos para respuestas con más de dos categorías:
+    - Modelo de crédito parcial. Es apropiado para ítems que requiere completar un número de tareas para recibir la puntuación máxima. Ítems "abiertos" en los cuales se puede calificar cada parte.
+    - Modelo de crédito parcial generalizado. Es una extensión del anterior agregando un parámetro de discriminación. 
+    - Modelo de respuesta graduada. En este modelo se considera que los ítems tienen un número de partes que son independientes y la puntuación indica cuántas partes se completaron correctamente.
+    
+
+## Referencias
+
+* Abad, F., Garrido, J., Olea, J., Ponsoda, V., **Introducción a la Psicometría**, 2006.
+* Lord, F., **Applications of Item Response Theory to Practical Testing Problems**, 1980.
+* Monroy, L., Morales, M., **Estadística Multivariada: Inferencia y Métodos**, 2011.
+* Reckase, M., **Multidimensional Item Response Theory**, 2009.
+* Cameletti, M., Caviezel, V., *The Cronbach-Mesbah Curve for Assessing the Unidimensionality of an Item Set: The R Package CMC*.
+* Rasch, G., *On General Laws and the Meaning of Measurement in Psychology*, 1960.
